@@ -21,7 +21,8 @@ java {
     }
 }
 
-version = "0.1.0"
+version = "0.1.1"
+group = "de.apalopta.cmd"
 
 application {
     // Define the main class for the application.
@@ -53,10 +54,10 @@ publishing {
         }
     }
     publications {
-        create<MavenPublication>("gpr") {
-            groupId = "de.apalopta.cmd"
-            artifactId = "treekt"
+        create<MavenPublication>("treekt") {
             from(components["java"])
+            artifact(tasks.distZip)
+            artifact(tasks.distTar)
         }
     }
 }
