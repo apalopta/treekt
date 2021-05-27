@@ -6,9 +6,10 @@ build
 
 # IntelliJ
 .idea
-out
+out/
 
-out.txt
+out*
+out*.txt
 
 # not yet
 utilities

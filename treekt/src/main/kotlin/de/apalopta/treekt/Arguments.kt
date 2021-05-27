@@ -41,20 +41,21 @@ class Arguments(private val args: Array<String>) {
         this.hideSystemDirs = hideSystemDirs
         this.hideSystemFiles = hideSystemFiles
 //        this.truncateTo = truncate
-        this.out = if (out != null) File(out!!) else null
+        val outFilePath = if (out != null) Paths.get(out!!) else null
+        this.out = outFilePath?.toAbsolutePath()?.toFile()
     }
 
     override fun toString(): String {
-        return parser.toString()
-//        return mapOf(
-//            "depth" to levels.toString(),
-//            "dir" to dir.toString(),
-//            "hideSystemDirs" to hideSystemDirs.toString(),
-//            "hideSystemFiles" to hideSystemFiles.toString(),
-//            "skip (regex)" to skip.toString(),
-//            "skipDir" to skipDirectories.toString(),
-//            "skipFile" to skipFiles.toString(),
-//            "out" to out.toString()
-//        ).map { "${it.key}: ${it.value}" }.joinToString(", ", prefix = "[", postfix = "]")
+//        return parser.toString()
+        return mapOf(
+            "depth" to levels.toString(),
+            "dir" to dir.toString(),
+            "hideSystemDirs" to hideSystemDirs.toString(),
+            "hideSystemFiles" to hideSystemFiles.toString(),
+            "skip (regex)" to skip.toString(),
+            "skipDir" to skipDirectories.toString(),
+            "skipFile" to skipFiles.toString(),
+            "out" to out.toString()
+        ).map { "${it.key}: ${it.value}" }.joinToString(", ", prefix = "[", postfix = "]")
     }
 }

@@ -9,14 +9,14 @@ class ContentCreator(private val args: Arguments) {
     }
 
     fun display() {
-        println("dir:             ${args.dir.path}")
-        println("levels:          ${args.levels}")
-        println("skipDirectories: ${args.skipDirectories.joinToString(", ")}")
-        println("hideSystemDirs:  ${args.hideSystemDirs}")
-        println("hideSystemFiles: ${args.hideSystemFiles}")
+//        println("dir:             ${args.dir.path}")
+//        println("levels:          ${args.levels}")
+//        println("skipDirectories: ${args.skipDirectories.joinToString(", ")}")
+//        println("hideSystemDirs:  ${args.hideSystemDirs}")
+//        println("hideSystemFiles: ${args.hideSystemFiles}")
 
-        println("----")
         println(args.toString())
+        println("----")
         println(list())
         println("----")
     }
