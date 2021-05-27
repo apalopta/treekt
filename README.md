@@ -7,6 +7,8 @@ The _treee_ alternative did not convince me either.
 
 So I took the chance and started my own one.
 
+... CI being set up...
+
 ## Usage
 
     > treekt -h
@@ -42,5 +44,4 @@ To output file ignoring system files and directories as well as `build` and `out
     |   build.gradle.kts
     gradlew
     gradlew.bat
-    out.txt
     README.md
