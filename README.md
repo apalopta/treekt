@@ -7,9 +7,11 @@ The _treee_ alternative did not convince me either.
 
 So I took the chance and started my own one.
 
-... CI being set up...
-
 ## Usage
+
+`treekt`'s default: print the current directory and all its children recursively (exactly as `tree` does).
+
+However, you might need to tweak the output a bit:
 
     > treekt -h
     Usage: treekt options_list
