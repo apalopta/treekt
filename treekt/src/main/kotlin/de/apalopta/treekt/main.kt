@@ -1,23 +1,17 @@
 package de.apalopta.treekt
 
-// plopt
-
-//import de.apalopta.treekt.utilities.StringUtils
-//import org.apache.commons.text.WordUtils
-
+/** The treekt main method. */
 fun main(args: Array<String>) {
 
-//    val tokens = StringUtils.split(MessageUtils.getMessage())
-//    val result = StringUtils.join(tokens)
-//    println(WordUtils.capitalize(result))
-
-
     val arguments = Arguments(args)
-
     val contentCreator = ContentCreator(arguments)
+
+    // write to file - if given - or just display
     if (arguments.out != null) {
-        arguments.out.parentFile.mkdirs()
-        arguments.out.writeText(contentCreator.list())
+        arguments.out.run {
+            parentFile.mkdirs()
+            writeText(contentCreator.list())
+        }
     } else {
         contentCreator.display()
     }
