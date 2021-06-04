@@ -25,6 +25,7 @@ There are some options:
     Options:
     --depth, -l [256] -> number of levels (max. 256) { Int }
     --dir, -d [C:\git\treekt-dev] -> directory { String }
+    --showFiles, -f [false] -> show files
     --skip, -s -> skip pattern { String }
     --skipDir, -sd -> skip directory { String }
     --skipFile, -sf -> skip file { String }
@@ -41,7 +42,7 @@ Ignore system files and directories as well as `build` and `out` directory and a
 Show 3 levels.
 Output goes to `out.txt`:
 
-    treekt --depth 3 -hsf -hsd -sd build -sd out -s ".*settings.*" -o "out.txt" 
+    treekt -f --depth 3 -hsf -hsd -sd build -sd out -s ".*settings.*" -o "out.txt" 
 
 Output is something like:
 
@@ -66,7 +67,7 @@ In that case limit the displayed files.
 
 The example lists 4 levels, limits to 3 directories and 2 files.
 
-    > treekt -l 4 -td 3 -tf 2 -sd buildSrc 
+    > treekt -f -l 4 -td 3 -tf 2 -sd buildSrc 
 
 Output is something like:
 
@@ -113,7 +114,6 @@ At the moment I am quite happy with it.
 It satisfies my personal requirements.
 However, there are still ideas:
 
-- dirs-only mode
 - make the tool accept repeated `-s`.
 - other output formats (e.g., non-ascii)
 - try it from a Gradle build for auto-documentation

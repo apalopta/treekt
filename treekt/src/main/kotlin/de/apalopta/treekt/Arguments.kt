@@ -11,6 +11,7 @@ import java.nio.file.Paths
 class Arguments(private val args: Array<String>) {
     val levels: Int
     val dir: File
+    val showFiles: Boolean
     val hideSystemDirs: Boolean
     val hideSystemFiles: Boolean
     val skip : Regex?
@@ -25,6 +26,7 @@ class Arguments(private val args: Array<String>) {
     init {
         val depth by parser.option(ArgType.Int, shortName = "l", description = "number of levels (max. 256)").default(ContentCreator.MAX_DEPTH)
         val dir by parser.option(ArgType.String, shortName = "d", description = "directory").default(Paths.get("").toAbsolutePath().toString())
+        val showFiles by parser.option(ArgType.Boolean, shortName = "f", description = "show files").default(false)
         val skip by parser.option(ArgType.String, shortName = "s", description = "skip pattern")
         val skipDir by parser.option(ArgType.String, shortName = "sd", description = "skip directory").multiple()
         val skipFile by parser.option(ArgType.String, shortName = "sf", description = "skip file").multiple()
@@ -38,6 +40,7 @@ class Arguments(private val args: Array<String>) {
 
         this.levels = depth.coerceAtMost(ContentCreator.MAX_DEPTH).coerceAtLeast(1)
         this.dir = File(dir)
+        this.showFiles = showFiles
         this.skip = if (skip != null) """$skip""".toRegex() else null
         this.skipDirectories = skipDir.map { it.replace('\\', '/') }
         this.skipFiles = skipFile.map { it.replace('\\', '/') }

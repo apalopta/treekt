@@ -25,14 +25,16 @@ class ContentCreator(private val args: Arguments) {
         if (filesOfDirectory != null && filesOfDirectory.isNotEmpty()) {
             val (dirs, files) = filesOfDirectory.partition { it.isDirectory }
             displayDirs(dirs.filter { wouldDisplayDir(it) }, sb, prefix, level)
-            displayFiles(files.filter { wouldDisplayFile(it) }, sb, prefix)
+            if (args.showFiles) {
+                displayFiles(files.filter { wouldDisplayFile(it) }, sb, prefix)
+            }
         }
 
         return sb.toString()
     }
 
     private fun displayDirs(displayableDirs: List<File>, sb: StringBuilder, prefix: String, level: Int) {
-        val numberOfDirs = Math.min(displayableDirs.size, args.limitDirsTo)
+        val numberOfDirs = min(displayableDirs.size, args.limitDirsTo)
         val appendAnonymousDir = displayableDirs.size > args.limitDirsTo
         val lastIndex = if (appendAnonymousDir) numberOfDirs else (numberOfDirs - 1)
 
