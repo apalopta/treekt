@@ -21,7 +21,7 @@ java {
     }
 }
 
-version = "0.2.0"
+version = "0.3.0"
 group = "de.apalopta.cmd"
 
 application {
