@@ -9,7 +9,7 @@ So I started this one.
 
 ## How to Install
 
-Unzip / untar to a directory of your choice and set the _path_ to the `bin` directory.
+Unzip to a directory of your choice and set the _path_ to the `bin` directory.
 
 You should also be able to use it from within a Gradle build (did not try this yet).
 
@@ -113,6 +113,7 @@ At the moment I am quite happy with it.
 It satisfies my personal requirements.
 However, there are still ideas:
 
+- dirs-only mode
 - make the tool accept repeated `-s`.
 - other output formats (e.g., non-ascii)
 - try it from a Gradle build for auto-documentation
