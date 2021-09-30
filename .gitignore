@@ -13,3 +13,8 @@ out*.txt
 
 # not yet
 utilities
+
+# VSCode
+.classpath
+.project
+.settings

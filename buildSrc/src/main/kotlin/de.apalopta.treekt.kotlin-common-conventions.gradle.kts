@@ -30,13 +30,13 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     // Use JUnit Jupiter API for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
 
     // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
-tasks.test {
-    // Use junit platform for unit tests.
-    useJUnitPlatform()
-}
+//tasks.test {
+//    // Use junit platform for unit tests.
+//    useJUnitPlatform()
+//}
