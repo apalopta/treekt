@@ -1,3 +1,3 @@
 -dontobfuscate
-
+-dontnote
 -keep class de.apalopta.treekt.MainKt { *; }

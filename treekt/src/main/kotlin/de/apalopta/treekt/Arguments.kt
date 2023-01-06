@@ -8,7 +8,7 @@ import java.io.File
 import java.nio.file.Paths
 
 /** CLI for treekt. */
-class Arguments(private val args: Array<String>) {
+class Arguments(args: Array<String>) {
     val levels: Int
     val dir: File
     val showFiles: Boolean
@@ -41,13 +41,17 @@ class Arguments(private val args: Array<String>) {
         this.levels = depth.coerceAtMost(ContentCreator.MAX_DEPTH).coerceAtLeast(1)
         this.dir = File(dir)
         this.showFiles = showFiles
+
         this.skip = if (skip != null) """$skip""".toRegex() else null
         this.skipDirectories = skipDir.map { it.replace('\\', '/') }
         this.skipFiles = skipFile.map { it.replace('\\', '/') }
+
         this.hideSystemDirs = hideSystemDirs
         this.hideSystemFiles = hideSystemFiles
+
         this.limitDirsTo = limitDirsTo
         this.limitFilesTo = limitFilesTo
+
         val outFilePath = if (out != null) Paths.get(out!!) else null
         this.out = outFilePath?.toAbsolutePath()?.toFile()
     }

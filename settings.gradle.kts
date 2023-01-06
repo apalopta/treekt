@@ -11,4 +11,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "treekt-dev"
-include("treekt")//, "list", "utilities")
+
+include("treekt")

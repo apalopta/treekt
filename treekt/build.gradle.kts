@@ -7,26 +7,22 @@ import proguard.gradle.ProGuardTask
 import java.io.FilenameFilter
 
 buildscript {
-    // repositories {
-//         mavenCentral()
-//     }
     dependencies {
         // There is apparently no plugin
-        classpath("com.guardsquare:proguard-gradle:7.1.0")
+        classpath("com.guardsquare:proguard-gradle:7.3.0")
     }
 }
 
 plugins {
     id("de.apalopta.treekt.kotlin-application-conventions")
 
-    id("com.github.johnrengelman.shadow") version ("7.0.0")
+    id("com.github.johnrengelman.shadow") version ("7.1.2")
+
     `maven-publish`
 }
 
 dependencies {
-//    implementation("org.apache.commons:commons-text")
-//    implementation(project(":utilities"))
-    implementation("org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5")
 }
 
 java {
@@ -35,7 +31,7 @@ java {
     }
 }
 
-version = "0.3.2"
+version = "0.3.3"
 group = "de.apalopta.cmd"
 
 application {
@@ -84,34 +80,41 @@ val minify = tasks.register<ProGuardTask>("minify") {
     libraryjars(mapOf("filter" to "!**META-INF/versions/**.class"), configurations.compileClasspath)
 }
 
-tasks.register<JavaExec>("runMin") {
-    classpath = files(minify).from(minify)
-}
-
-val startShadowScripts = tasks.named<CreateStartScripts>("startShadowScripts") {
+tasks.named<JavaExec>("run").configure {
     classpath = files(minify)
 }
 
+val startMinifiedScripts = tasks.register<CreateStartScripts>("startMinifiedScripts") {
+    // don't use shadowJar but minify
+    applicationName = "treekt"
+    mainClass.set("de.apalopta.treekt.MainKt")
+
+    outputDir = layout.buildDirectory.dir("scriptsMini").get().asFile
+    classpath = files(minify.map { it.outJarFiles })
+}
+
 val minifiedDistZip = tasks.register<Zip>("minifiedDistZip") {
-//    archiveClassifier.set("minified")
+    group = "Distribution"
+    description = "Bundles the project as a distribution."
 
     val zipRoot = "/${project.name}-${project.version}"
     from(minify) {
         into("$zipRoot/lib")
     }
-    from(startShadowScripts) {
+    from(startMinifiedScripts) {
         into("$zipRoot/bin")
     }
 }
 
 val minifiedDistTar = tasks.register<Tar>("minifiedDistTar") {
-//    archiveClassifier.set("minified")
+    group = "Distribution"
+    description = "Bundles the project as a distribution."
 
     val tarRoot = "/${project.name}-${project.version}"
     from(minify) {
         into("$tarRoot/lib")
     }
-    from(startShadowScripts) {
+    from(startMinifiedScripts) {
         into("$tarRoot/bin")
     }
 }
@@ -120,15 +123,22 @@ val minifiedDistTar = tasks.register<Tar>("minifiedDistTar") {
 tasks.named<Sync>("installDist") {
     destinationDir = layout.buildDirectory.file("install/treekt-fat").get().asFile
 }
+
 // the minified output will be the standard installation
-tasks.named<Sync>("installShadowDist") {
-    destinationDir = layout.buildDirectory.file("install/treekt").get().asFile
+tasks.register<Sync>("installMinified") {
+    destinationDir = layout.buildDirectory.dir("install/treekt").get().asFile
+    from(minify.map { it.outJarFiles} ) {
+        into("lib")
+    }
+    from(startMinifiedScripts) {
+        into("bin")
+    }
 }
 
 tasks.register("install") {
     group = "Distribution"
     description = "Installs an optimized version distribution."
-    dependsOn(tasks.named("installShadowDist"))
+    dependsOn(tasks.named("installMinified"))
 }
 
 class MyFilenameFilter : FilenameFilter {
@@ -166,11 +176,6 @@ publishing {
     }
     publications {
         // don't publish the huge standard files
-//        create<MavenPublication>("treekt") {
-//            from(components["java"])
-//            artifact(tasks.distZip)
-//            artifact(tasks.distTar)
-//        }
         create<MavenPublication>("treektMinified") {
             artifact(minify)
             artifact(minifiedDistZip)
