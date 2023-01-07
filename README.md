@@ -24,16 +24,17 @@ There are some options:
     Usage: treekt options_list
     Options:
     --depth, -l [256] -> number of levels (max. 256) { Int }
-    --dir, -d [C:\git\treekt-dev] -> directory { String }
+    --dir, -d [<current dir>] -> directory { String }
     --showFiles, -f [false] -> show files
-    --skip, -s -> skip pattern { String }
-    --skipDir, -sd -> skip directory { String }
-    --skipFile, -sf -> skip file { String }
-    --hideSystemDirs, -hsd [false] -> hide system directories
-    --hideSystemFiles, -hsf [false] -> hide system files
-    --limitDirsTo, -td [2147483647] -> limit the number of displayed directories { Int }
-    --limitFilesTo, -tf [2147483647] -> limit the number of displayed files { Int }
+    --skip, -s [.*] -> skip pattern (works on directories and files) { String }
+    --skipDir, -sd -> skip directory pattern { String }
+    --skipFile, -sf -> skip file pattern { String }
+    --hideFiles, -hf [NONE] -> hide system files of type (not all starting with '.' are hidden files! \
+                 { Value should be one of [none, all_system_files, system_files_files_only, system_files_directories_only] }
+    --limitDirsTo, -ld [2147483647] -> limit the number of displayed directories { Int }
+    --limitFilesTo, -lf [2147483647] -> limit the number of displayed files { Int }
     --out, -o -> output file { String }
+    --format [UTF8] -> output format { Value should be one of [ascii, utf8] }
     --help, -h -> Usage info
 
 ## Example 1
@@ -67,7 +68,7 @@ In that case limit the displayed files.
 
 The example lists 4 levels, limits to 3 directories and 2 files.
 
-    > treekt -f -l 4 -td 3 -tf 2 -sd buildSrc 
+    > treekt -f -l 4 -ld 3 -lf 2 -sd buildSrc 
 
 Output is something like:
 
@@ -114,6 +115,5 @@ At the moment I am quite happy with it.
 It satisfies my personal requirements.
 However, there are still ideas:
 
-- make the tool accept repeated `-s`.
 - other output formats (e.g., non-ascii)
 - try it from a Gradle build for auto-documentation

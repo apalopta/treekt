@@ -23,6 +23,7 @@ plugins {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5")
+    implementation(kotlin("script-runtime"))
 }
 
 java {
@@ -31,7 +32,7 @@ java {
     }
 }
 
-version = "0.3.5"
+version = "0.3.6"
 group = "de.apalopta.cmd"
 
 application {

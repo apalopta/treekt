@@ -4,7 +4,8 @@ package de.apalopta.treekt
 fun main(args: Array<String>) {
 
     val arguments = Arguments(args)
-    val contentCreator = ContentCreator(arguments)
+//    val contentCreator = ContentCreator(arguments)
+    val contentCreator = FileLister(arguments)
 
     // write to file - if given - or just display
     if (arguments.out != null) {
