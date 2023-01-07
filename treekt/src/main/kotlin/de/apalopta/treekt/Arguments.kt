@@ -14,10 +14,14 @@ enum class HideType() {
     SYSTEM_FILES_DIRECTORIES_ONLY
 }
 
-enum class Format() {
-    ASCII
-//    UTF8
+enum class Format(val runningDirSymbol: String, val lastDirSymbol: String, val anonymous: String, private val lastDirRegex: Regex) {
+    ASCII("+---", "\\---", "...", """[\\-]""".toRegex());
+
+    fun prefixForNextLevel(string: String) =
+        string.replace(lastDirRegex, " ").replace('+', '|')
 }
+
+const val MAX_DEPTH: Int = 256
 
 /** CLI for treekt. */
 class Arguments(args: Array<String>) {
@@ -36,10 +40,10 @@ class Arguments(args: Array<String>) {
     private val parser = ArgParser("treekt")
 
     init {
-        val depth by parser.option(ArgType.Int, shortName = "l", description = "number of levels (max. ${FileLister.MAX_DEPTH})").default(FileLister.MAX_DEPTH)
+        val depth by parser.option(ArgType.Int, shortName = "l", description = "number of levels (max. $MAX_DEPTH)").default(MAX_DEPTH)
         val dir by parser.option(ArgType.String, shortName = "d", description = "directory").default(Paths.get("").toAbsolutePath().toString())
         val showFiles by parser.option(ArgType.Boolean, shortName = "f", description = "show files").default(false)
-        val skip by parser.option(ArgType.String, shortName = "s", description = "skip pattern (works on directories and files)").multiple().default(listOf(".*"))
+        val skip by parser.option(ArgType.String, shortName = "s", description = "skip pattern (works on directories and files)").multiple()
         val skipDir by parser.option(ArgType.String, shortName = "sd", description = "skip directory pattern").multiple()
         val skipFile by parser.option(ArgType.String, shortName = "sf", description = "skip file pattern").multiple()
         val hideFiles by parser.option(ArgType.Choice<HideType>(), shortName = "hf", description = "hide system files of type (not all starting with '.' are hidden files!").default(HideType.NONE)
@@ -50,7 +54,7 @@ class Arguments(args: Array<String>) {
 
         parser.parse(args)
 
-        this.levels = depth.coerceIn(0..FileLister.MAX_DEPTH)
+        this.levels = depth.coerceIn(1..MAX_DEPTH)
         this.dir = File(dir)
         this.showFiles = showFiles
 

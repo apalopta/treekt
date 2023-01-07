@@ -5,30 +5,26 @@ import kotlin.math.min
 
 /** Creates the directory tree output. */
 class FileLister(private val args: Arguments) {
-    private var sb: StringBuilder = java.lang.StringBuilder()
-
-    companion object {
-        const val MAX_DEPTH = 256
-    }
+    private val format = args.format
+    private val dir = args.dir
 
     fun display() {
-        println("----")
         println(list())
-        println("----")
     }
 
-    fun list(): String =
-        if (sb.isNotEmpty())
-            sb.toString()
-        else
-            sb.append(args.dir.path).append(listDir(args.dir, 1)).toString()
+    /** Returns the directory listing as String. */
+    fun list(): String = StringBuilder()
+        .append(dir.path)
+        .append(listDir(dir, 1))
+        .toString()
 
 
     private fun listDir(dir: File, level: Int, prefix: String = ""): String {
         val sb = StringBuilder()
-        val (dirs, files) = dir.listFiles().partition { it.isDirectory }
 
         if (level <= args.levels) {
+            val (dirs, files) = dir.listFiles().partition { it.isDirectory }
+
             showDirs(dirs, sb, prefix, level)
             if (args.showFiles) {
                 showFiles(files, sb, prefix)
@@ -38,42 +34,47 @@ class FileLister(private val args: Arguments) {
         return sb.toString()
     }
 
-    private fun String.prefixForNextLevel() = replace(Regex("""[\\-]"""), " ").replace('+', '|')
-    private fun String.prefixForCurrentDir(isLastDisplayed: Boolean) = if (isLastDisplayed) "$this\\---" else "$this+---"
+    private fun String.toCurrentDirPrefix(isLastDisplayed: Boolean) =
+        if (isLastDisplayed) "$this${format.lastDirSymbol}" else "$this${format.runningDirSymbol}"
 
     private fun showDirs(dirs: List<File>, sb: StringBuilder, prefix: String, level: Int) {
         var nrOfDirs: Int
         var appendAnonymous: Boolean
         var lastDisplayedIndex: Int
-        dirs.filter { it.wouldDisplay() }.also {
-            nrOfDirs = min(it.size, args.limitDirsTo)
-            appendAnonymous = it.size > args.limitDirsTo
-            lastDisplayedIndex = if (appendAnonymous) nrOfDirs else nrOfDirs - 1
-        }.take(nrOfDirs).onEachIndexed { index, currentDir ->
-            val thisLinesPrefix = prefix.prefixForCurrentDir(index == lastDisplayedIndex)
-            sb.appendLine().append("$thisLinesPrefix${currentDir.name}")
-            sb.append(listDir(currentDir, level + 1, thisLinesPrefix.prefixForNextLevel()))
-        }.also {
-            if (appendAnonymous) {
-                sb.appendLine().append("$prefix\\---...")
+        dirs.filter { it.wouldDisplay() }
+            .also {
+                nrOfDirs = min(it.size, args.limitDirsTo)
+                appendAnonymous = it.size > args.limitDirsTo
+                lastDisplayedIndex = if (appendAnonymous) nrOfDirs else nrOfDirs - 1
+            }.take(nrOfDirs).onEachIndexed { index, currentDir ->
+                val thisLinesPrefix = prefix.toCurrentDirPrefix(index == lastDisplayedIndex)
+                sb.appendLine().append("$thisLinesPrefix${currentDir.name}")
+                sb.append(listDir(currentDir, level + 1, format.prefixForNextLevel(thisLinesPrefix)))
+            }.also {
+                if (appendAnonymous) {
+                    sb.appendLine().append("$prefix${format.lastDirSymbol}${format.anonymous}")
+                }
             }
-        }
     }
 
     private fun showFiles(files: List<File>, sb: StringBuilder, prefix: String) {
         var nrOfFiles: Int
         var appendAnonymous: Boolean
-        files.filter { it.wouldDisplay() }.also {
-            nrOfFiles = min(it.size, args.limitFilesTo)
-            appendAnonymous = it.size > args.limitFilesTo
-        }.take(nrOfFiles).forEach { sb.appendLine().append("$prefix${it.name}") }.also {
-            if (appendAnonymous) {
-                sb.appendLine().append("$prefix...")
+        files.filter { it.wouldDisplay() }
+            .also {
+                nrOfFiles = min(it.size, args.limitFilesTo)
+                appendAnonymous = it.size > args.limitFilesTo
             }
-        }
+            .take(nrOfFiles)
+            .forEach { sb.appendLine().append("$prefix${it.name}") }
+            .also {
+                if (appendAnonymous) {
+                    sb.appendLine().append("$prefix${format.anonymous}")
+                }
+            }
     }
 
-    private fun File.wouldDisplay() = dontHide() && dontSkip() && dontMatchGlobalSkip()
+    private fun File.wouldDisplay() = dontHide() && dontSkip() && dontSkipInGeneral()
 
     private fun File.dontHide() = args.hideType == HideType.NONE ||
             !(isHidden && ((args.hideType == HideType.ALL_SYSTEM_FILES)
@@ -87,5 +88,5 @@ class FileLister(private val args: Arguments) {
         args.skipDirectories.isEmpty() || args.skipDirectories.none { toURI().toString().contains(it) }
     }
 
-    private fun File.dontMatchGlobalSkip() = args.skip.none { it.containsMatchIn(toURI().toString()) }
+    private fun File.dontSkipInGeneral() = args.skip.none { it.containsMatchIn(toURI().toString()) }
 }
