@@ -11,7 +11,7 @@ fun main(args: Array<String>) {
     if (arguments.out != null) {
         arguments.out.run {
             parentFile.mkdirs()
-            writeText(contentCreator.list())
+            writeText(contentCreator.listing())
         }
     } else {
         contentCreator.display()

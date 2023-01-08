@@ -7,18 +7,34 @@ import kotlinx.cli.multiple
 import java.io.File
 import java.nio.file.Paths
 
-enum class HideType() {
+enum class HideType {
     NONE,
     ALL_SYSTEM_FILES,
     SYSTEM_FILES_FILES_ONLY,
     SYSTEM_FILES_DIRECTORIES_ONLY
 }
 
-enum class Format(val runningDirSymbol: String, val lastDirSymbol: String, val anonymous: String, private val lastDirRegex: Regex) {
-    ASCII("+---", "\\---", "...", """[\\-]""".toRegex());
+enum class Format(val type: FormatType) {
+    ASCII(AsciiFormat)
+}
 
-    fun prefixForNextLevel(string: String) =
-        string.replace(lastDirRegex, " ").replace('+', '|')
+interface FormatType {
+    val runningDirSymbol: String
+    val lastDirSymbol: String
+    val anonymous: String
+    val lastDirRegex: Regex
+
+    fun prefixForNextLevel(prefix: String) : String
+}
+
+object AsciiFormat : FormatType {
+    override val runningDirSymbol = "+---"
+    override val lastDirSymbol = "\\---"
+    override val anonymous = "..."
+    override val lastDirRegex = """[\\-]""".toRegex()
+
+    override fun prefixForNextLevel(prefix: String) =
+        prefix.replace(lastDirRegex, " ").replace('+', '|')
 }
 
 const val MAX_DEPTH: Int = 256
@@ -67,7 +83,7 @@ class Arguments(args: Array<String>) {
         this.limitDirsTo = limitDirsTo
         this.limitFilesTo = limitFilesTo
 
-        val outFilePath = if (out != null) Paths.get(out!!) else null
+        val outFilePath = if (out != null) Paths.get(out) else null
         this.out = outFilePath?.toAbsolutePath()?.toFile()
 
         this.format = format

@@ -5,29 +5,28 @@ import kotlin.math.min
 
 /** Creates the directory tree output. */
 class FileLister(private val args: Arguments) {
-    private val format = args.format
+    private val format = args.format.type
     private val dir = args.dir
 
     fun display() {
-        println(list())
+        println(listing())
     }
 
     /** Returns the directory listing as String. */
-    fun list(): String = StringBuilder()
+    fun listing(): String = StringBuilder()
         .append(dir.path)
         .append(listDir(dir, 1))
         .toString()
 
-
+    /** List directories, then files. */
     private fun listDir(dir: File, level: Int, prefix: String = ""): String {
         val sb = StringBuilder()
 
         if (level <= args.levels) {
             val (dirs, files) = dir.listFiles().partition { it.isDirectory }
-
-            showDirs(dirs, sb, prefix, level)
+            dirs.listAsDirs(sb, prefix, level)
             if (args.showFiles) {
-                showFiles(files, sb, prefix)
+                files.listAsFiles(sb, prefix)
             }
         }
 
@@ -37,44 +36,43 @@ class FileLister(private val args: Arguments) {
     private fun String.toCurrentDirPrefix(isLastDisplayed: Boolean) =
         if (isLastDisplayed) "$this${format.lastDirSymbol}" else "$this${format.runningDirSymbol}"
 
-    private fun showDirs(dirs: List<File>, sb: StringBuilder, prefix: String, level: Int) {
-        var nrOfDirs: Int
+    private fun List<File>.listAsDirs(sb: StringBuilder, prefix: String, level: Int) {
+        var nrOfItems: Int
         var appendAnonymous: Boolean
         var lastDisplayedIndex: Int
-        dirs.filter { it.wouldDisplay() }
+        filter { it.shallDisplay() }
             .also {
-                nrOfDirs = min(it.size, args.limitDirsTo)
-                appendAnonymous = it.size > args.limitDirsTo
-                lastDisplayedIndex = if (appendAnonymous) nrOfDirs else nrOfDirs - 1
-            }.take(nrOfDirs).onEachIndexed { index, currentDir ->
+                nrOfItems = min(it.size, args.limitDirsTo)
+                appendAnonymous = nrOfItems < it.size
+                lastDisplayedIndex = if (appendAnonymous) nrOfItems else nrOfItems - 1
+            }
+            .take(nrOfItems)
+            .forEachIndexed { index, currentDir ->
                 val thisLinesPrefix = prefix.toCurrentDirPrefix(index == lastDisplayedIndex)
                 sb.appendLine().append("$thisLinesPrefix${currentDir.name}")
                 sb.append(listDir(currentDir, level + 1, format.prefixForNextLevel(thisLinesPrefix)))
-            }.also {
-                if (appendAnonymous) {
-                    sb.appendLine().append("$prefix${format.lastDirSymbol}${format.anonymous}")
-                }
             }
+        if (appendAnonymous) {
+            sb.appendLine().append("$prefix${format.lastDirSymbol}${format.anonymous}")
+        }
     }
 
-    private fun showFiles(files: List<File>, sb: StringBuilder, prefix: String) {
-        var nrOfFiles: Int
+    private fun List<File>.listAsFiles(sb: StringBuilder, prefix: String) {
+        var nrOfItems: Int
         var appendAnonymous: Boolean
-        files.filter { it.wouldDisplay() }
+        filter { it.shallDisplay() }
             .also {
-                nrOfFiles = min(it.size, args.limitFilesTo)
-                appendAnonymous = it.size > args.limitFilesTo
+                nrOfItems = min(it.size, args.limitFilesTo)
+                appendAnonymous = nrOfItems < it.size
             }
-            .take(nrOfFiles)
+            .take(nrOfItems)
             .forEach { sb.appendLine().append("$prefix${it.name}") }
-            .also {
-                if (appendAnonymous) {
-                    sb.appendLine().append("$prefix${format.anonymous}")
-                }
-            }
+        if (appendAnonymous) {
+            sb.appendLine().append("$prefix${format.anonymous}")
+        }
     }
 
-    private fun File.wouldDisplay() = dontHide() && dontSkip() && dontSkipInGeneral()
+    private fun File.shallDisplay() = dontHide() && dontSkip() && dontSkipInGeneral()
 
     private fun File.dontHide() = args.hideType == HideType.NONE ||
             !(isHidden && ((args.hideType == HideType.ALL_SYSTEM_FILES)
