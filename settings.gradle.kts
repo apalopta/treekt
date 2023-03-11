@@ -10,6 +10,7 @@ dependencyResolutionManagement {
     }
 }
 
+
 rootProject.name = "treekt-dev"
 
 include("treekt")

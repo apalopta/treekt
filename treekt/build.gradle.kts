@@ -3,6 +3,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.file.DuplicatesStrategy.EXCLUDE
 import org.gradle.internal.jvm.Jvm
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import proguard.gradle.ProGuardTask
 import java.io.FilenameFilter
 
@@ -26,18 +27,20 @@ dependencies {
     implementation(kotlin("script-runtime"))
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
 version = "0.3.6"
 group = "de.apalopta.cmd"
 
 application {
     // Define the main class for the application.
     mainClass.set("de.apalopta.treekt.MainKt")
+}
+
+tasks.compileJava {
+    options.release.set(8)
+}
+
+tasks.compileKotlin {
+    compilerOptions.jvmTarget.set(JVM_1_8)
 }
 
 tasks.jar {

@@ -13,63 +13,54 @@ class FileLister(private val args: Arguments) {
     }
 
     /** Returns the directory listing as String. */
-    fun listing(): String = StringBuilder()
-        .append(dir.path)
-        .append(listDir(dir, 1))
-        .toString()
-
-    /** List directories, then files. */
-    private fun listDir(dir: File, level: Int, prefix: String = ""): String {
-        val sb = StringBuilder()
-
-        if (level <= args.levels) {
-            val (dirs, files) = dir.listFiles().partition { it.isDirectory }
-            dirs.listAsDirs(sb, prefix, level)
-            if (args.showFiles) {
-                files.listAsFiles(sb, prefix)
-            }
-        }
-
-        return sb.toString()
+    fun listing(): String = buildString {
+        append(dir.path)
+        append(listDir(dir, 1))
     }
 
-    private fun String.toCurrentDirPrefix(isLastDisplayed: Boolean) =
-        if (isLastDisplayed) "$this${format.lastDirSymbol}" else "$this${format.runningDirSymbol}"
+    /** List directories, then files. */
+    private fun listDir(dir: File, level: Int, prefix: String = ""): String = buildString {
+        if (level <= args.levels) {
+            dir.listFiles()?.run {
+                val (dirs, files) = partition { it.isDirectory }
+                dirs.listAsDirs(this@buildString, prefix, level)
+                if (args.showFiles) {
+                    files.listAsFiles(this@buildString, prefix)
+                }
+            }
+        }
+    }
+
+    private fun String.toCurrentDirPrefix(isRunningDir: Boolean) =
+        if (isRunningDir) "$this${format.runningDirSymbol}" else "$this${format.lastDirSymbol}"
 
     private fun List<File>.listAsDirs(sb: StringBuilder, prefix: String, level: Int) {
-        var nrOfItems: Int
-        var appendAnonymous: Boolean
+        val nrOfDisplayedDirs = args.limitDirsTo
         var lastDisplayedIndex: Int
+
         filter { it.shallDisplay() }
-            .also {
-                nrOfItems = min(it.size, args.limitDirsTo)
-                appendAnonymous = nrOfItems < it.size
-                lastDisplayedIndex = if (appendAnonymous) nrOfItems else nrOfItems - 1
+            .filterIndexed { i, _ -> i < (nrOfDisplayedDirs + 1) }
+            .also { lastDisplayedIndex = min(it.size, nrOfDisplayedDirs) - 1 }
+            .forEachIndexed { i, dir ->
+                if (i <= lastDisplayedIndex) {
+                    val relevantIndex = if (lastDisplayedIndex < nrOfDisplayedDirs - 1) lastDisplayedIndex else nrOfDisplayedDirs
+                    val thisLinesPrefix = prefix.toCurrentDirPrefix(i < relevantIndex)
+                    sb.appendLine().append("$thisLinesPrefix${dir.name}")
+                    sb.append(listDir(dir, level + 1, format.prefixForNextLevel(thisLinesPrefix)))
+                } else {
+                    sb.appendLine().append("$prefix${format.lastDirSymbol}${format.anonymous}")
+                }
             }
-            .take(nrOfItems)
-            .forEachIndexed { index, currentDir ->
-                val thisLinesPrefix = prefix.toCurrentDirPrefix(index == lastDisplayedIndex)
-                sb.appendLine().append("$thisLinesPrefix${currentDir.name}")
-                sb.append(listDir(currentDir, level + 1, format.prefixForNextLevel(thisLinesPrefix)))
-            }
-        if (appendAnonymous) {
-            sb.appendLine().append("$prefix${format.lastDirSymbol}${format.anonymous}")
-        }
     }
 
     private fun List<File>.listAsFiles(sb: StringBuilder, prefix: String) {
-        var nrOfItems: Int
-        var appendAnonymous: Boolean
+        val limitTo = args.limitFilesTo
         filter { it.shallDisplay() }
-            .also {
-                nrOfItems = min(it.size, args.limitFilesTo)
-                appendAnonymous = nrOfItems < it.size
+            .filterIndexed { i, _ -> i < (limitTo + 1) }
+            .forEachIndexed { i, file ->
+                val entry = if (i < limitTo) file.name else format.anonymous
+                sb.appendLine().append("$prefix${entry}")
             }
-            .take(nrOfItems)
-            .forEach { sb.appendLine().append("$prefix${it.name}") }
-        if (appendAnonymous) {
-            sb.appendLine().append("$prefix${format.anonymous}")
-        }
     }
 
     private fun File.shallDisplay() = dontHide() && dontSkip() && dontSkipInGeneral()
